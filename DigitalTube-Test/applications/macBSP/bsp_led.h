@@ -24,7 +24,8 @@
 #define             macLED_Start_Reset_OFF()                        HAL_GPIO_WritePin ( LED_START_RESET_GPIO_Port, LED_START_RESET_Pin , GPIO_PIN_RESET )
 #define             macLED_Start_Reset_ON()                         HAL_GPIO_WritePin ( LED_START_RESET_GPIO_Port, LED_START_RESET_Pin , GPIO_PIN_SET )
 
-
+#define             macLED_Debug_OFF()                              HAL_GPIO_WritePin ( LED_DEBUG_GPIO_Port, LED_DEBUG_Pin , GPIO_PIN_RESET )
+#define             macLED_Debug_ON()                               HAL_GPIO_WritePin ( LED_DEBUG_GPIO_Port, LED_DEBUG_Pin , GPIO_PIN_SET )
 
 /*LED名称类型*/
 typedef	enum

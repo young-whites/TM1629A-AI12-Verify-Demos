@@ -53,7 +53,9 @@ void MX_USART1_UART_Init(void);
 
 /* Exported functions prototypes ---------------------------------------------*/
 
+
 /* USER CODE BEGIN EFP */
+
 
 /* USER CODE END EFP */
 
@@ -80,6 +82,8 @@ void MX_USART1_UART_Init(void);
 #define BCD_0_GPIO_Port GPIOB
 #define LED_START_RESET_Pin GPIO_PIN_7
 #define LED_START_RESET_GPIO_Port GPIOB
+#define LED_DEBUG_Pin GPIO_PIN_8
+#define LED_DEBUG_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

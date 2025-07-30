@@ -276,6 +276,11 @@ void LED_Out(int8_t ledName, int8_t ledState)
             else            macLED_Train_OFF();
             break;
 
+        case LED_Name_Debug:
+            if(ledState)    macLED_Debug_ON();
+            else            macLED_Debug_OFF();
+            break;
+
 	}
 	#endif
 }

@@ -84,10 +84,10 @@ void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
             else {
                 TM1629A_A_DIO_L();
             }
-            TM1629A_Delay_us(2);
-            TM1629A_A_CLK_H();
-            TM1629A_Delay_us(2);
             data >>= 1;
+            TM1629A_Delay_us(5);
+            TM1629A_A_CLK_H();
+            TM1629A_Delay_us(5);
         }
     }
 }
@@ -124,7 +124,7 @@ void TM1629A_Init(TM16xxSelect chip)
         // 自动地址增加
         TM1629A_Write_CMD(chip, 0x40);
         // 显示开，亮度7
-        TM1629A_Write_CMD(chip, 0x8F);
+        TM1629A_Write_CMD(chip, 0x88);
     }
 }
 
@@ -252,14 +252,22 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
   */
 void NixieTube_Thread_entry(void* parameter)
 {
-    uint8_t num[12] = {1,2,3, 4,5,6, 7,8,9, 0,1,2};  // 从左到右 12 位
+//    uint8_t num[12] = {1,2,3, 4,5,6, 7,8,9, 0,1,2};  // 从左到右 12 位
 
     TM1629A_Init(TM1629A_A);
-
+    TM1629A_Digital_Tube_Set_Brightness(TM1629A_A,7);
     for(;;)
     {
-        TM1629A_Digital_Tube_ScanNumber(TM1629A_A, num);
-        rt_thread_mdelay(200);
+        TM1629A_Write_Byte(TM1629A_A,0x09);
+//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,1,8);
+//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,2,8);
+//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,3,8);
+//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,4,8);
+//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,5,8);
+//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,6,8);
+//        TM1629A_Digital_Tube_ScanNumber(TM1629A_A, num);
+//        TM1629A_Digital_Tube_Clear(TM1629A_A);
+        rt_thread_mdelay(50);
     }
 
 }

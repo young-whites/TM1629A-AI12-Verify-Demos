@@ -47,7 +47,6 @@ UART_HandleTypeDef huart1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -201,21 +200,28 @@ void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED_ASSESS_GPIO_Port, LED_ASSESS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_START_RESET_GPIO_Port, LED_START_RESET_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, LED_START_RESET_Pin|LED_DEBUG_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : TM1629A_A_STB_Pin TM1629A_A_CLK_Pin LED_COMPETITION_Pin LED_TRAIN_Pin */
-  GPIO_InitStruct.Pin = TM1629A_A_STB_Pin|TM1629A_A_CLK_Pin|LED_COMPETITION_Pin|LED_TRAIN_Pin;
+  /*Configure GPIO pins : TM1629A_A_STB_Pin TM1629A_A_CLK_Pin */
+  GPIO_InitStruct.Pin = TM1629A_A_STB_Pin|TM1629A_A_CLK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : TM1629A_A_DIO_Pin */
   GPIO_InitStruct.Pin = TM1629A_A_DIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(TM1629A_A_DIO_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED_COMPETITION_Pin LED_TRAIN_Pin */
+  GPIO_InitStruct.Pin = LED_COMPETITION_Pin|LED_TRAIN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LED_ASSESS_Pin */
   GPIO_InitStruct.Pin = LED_ASSESS_Pin;
@@ -230,12 +236,12 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LED_START_RESET_Pin */
-  GPIO_InitStruct.Pin = LED_START_RESET_Pin;
+  /*Configure GPIO pins : LED_START_RESET_Pin LED_DEBUG_Pin */
+  GPIO_InitStruct.Pin = LED_START_RESET_Pin|LED_DEBUG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_START_RESET_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -244,6 +250,7 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
 
 #ifdef  USE_FULL_ASSERT
 /**

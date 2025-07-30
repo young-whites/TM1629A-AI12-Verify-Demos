@@ -40,16 +40,19 @@ static const AI12_Key_t key_map[16] =
  *  @brief  触摸芯片扫描函数
  *  @return 返回键值信息
  **/
+rt_uint8_t bcd,bcd0,bcd1,bcd2,bcd3 = 0;
 AI12_Key_t AI12_ScanKey(void)
 {
-    static rt_uint8_t bcd = 0;
+
     static rt_uint8_t index = 0;
 
-    bcd  = HAL_GPIO_ReadPin(BCD_0_GPIO_Port, BCD_0_Pin) ? (1 << 3) : 0;
-    bcd |= HAL_GPIO_ReadPin(BCD_1_GPIO_Port, BCD_1_Pin) ? (1 << 2) : 0;
-    bcd |= HAL_GPIO_ReadPin(BCD_2_GPIO_Port, BCD_2_Pin) ? (1 << 1) : 0;
-    bcd |= HAL_GPIO_ReadPin(BCD_3_GPIO_Port, BCD_3_Pin) ? (1 << 0) : 0;
+    bcd0  = HAL_GPIO_ReadPin(BCD_0_GPIO_Port, BCD_0_Pin) ? 1 : 0;
+    bcd1  = HAL_GPIO_ReadPin(BCD_1_GPIO_Port, BCD_1_Pin) ? 1 : 0;
+    bcd2  = HAL_GPIO_ReadPin(BCD_2_GPIO_Port, BCD_2_Pin) ? 1 : 0;
+    bcd3  = HAL_GPIO_ReadPin(BCD_3_GPIO_Port, BCD_3_Pin) ? 1 : 0;
 
+    bcd = (bcd3 << 3) + (bcd2 << 2) + (bcd1 << 1) + bcd0;
+    rt_kprintf("%x\r\n",bcd);
     /* 计算索引值 */
     index = bcd & 0x0F;
 
@@ -143,7 +146,7 @@ int AI12_Thread_Init(void)
 
     return RT_EOK;
 }
-INIT_APP_EXPORT(AI12_Thread_Init);
+//INIT_APP_EXPORT(AI12_Thread_Init);
 
 
 
