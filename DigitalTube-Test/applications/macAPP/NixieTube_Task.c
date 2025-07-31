@@ -112,14 +112,37 @@ void TM1629A_Write_CMD(TM16xxSelect chip , rt_uint8_t cmd)
 }
 
 
+
 /**
-  * @brief  MCU send Anode digital tube's sequence address to TM1629A chip.
-  * @param  chip 选择指定芯片
-  *         cmd 指令数据
+  * @brief  TM1629A Chip display off/on
+  * @param  ctrl_cmd ：  0 --> off
+  *                  :  1 --> on
   * @retval void
   * @note
   */
-void TM1629A_Select_Digital_Sequence(TM16xxSelect chip ,)
+void TM1629A_Display_CTRL(TM16xxSelect chip, rt_uint8_t ctrl_cmd)
+{
+#define TM1629A_DISPLAY_ON_CMD  0x8F // 显示开,亮度7
+#define TM1629A_DISPLAY_OFF_CMD 0x87 // 显示关,亮度7
+    if(chip == TM1629A_A)
+    {
+        if(ctrl_cmd == 0){
+            TM1629A_Write_CMD(chip, TM1629A_DISPLAY_ON_CMD);
+        }
+        else if(ctrl_cmd == 1){
+            TM1629A_Write_CMD(chip, TM1629A_DISPLAY_OFF_CMD);
+        }
+    }
+}
+
+
+/**
+  * @brief  TM1629A Chip set display register address.
+  * @param
+  * @retval void
+  * @note
+  */
+void TM1629A_SET_Dispaly_RES_Addr(TM16xxSelect chip, )
 {
 
 }
@@ -146,6 +169,35 @@ void TM1629A_Init(TM16xxSelect chip)
         TM1629A_Write_CMD(chip, 0x8F);
     }
 }
+
+
+
+
+
+
+
+
+/**
+  * @brief  MCU send Anode digital tube's sequence address to TM1629A chip.
+  * @param  chip 选择指定芯片
+  *         cmd 指令数据
+  * @retval void
+  * @note
+  */
+void TM1629A_Select_Digital_Sequence(TM16xxSelect chip ,)
+{
+    if(chip == TM1629A_A)
+    {
+
+    }
+}
+
+
+
+
+
+
+
 
 
 
@@ -276,7 +328,8 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
   */
 void NixieTube_Thread_entry(void* parameter)
 {
-//    TM1629A_Init(TM1629A_A);
+    TM1629A_Init(TM1629A_A);
+
     for(;;)
     {
         TM1629A_Write_Byte(TM1629A_A,0x99);
