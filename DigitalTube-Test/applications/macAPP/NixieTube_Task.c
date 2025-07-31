@@ -74,7 +74,8 @@ void TM1629A_Delay_us(uint32_t us)
 /* 发送 1 字节（低位先行） */
 void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
 {
-    if(chip == TM1629A_A){
+    if(chip == TM1629A_A)
+    {
         for(rt_uint8_t i = 0; i < 8; i++)
         {
             TM1629A_A_CLK_L();
@@ -84,10 +85,10 @@ void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
             else {
                 TM1629A_A_DIO_L();
             }
-            data >>= 1;
             TM1629A_Delay_us(5);
             TM1629A_A_CLK_H();
             TM1629A_Delay_us(5);
+            data >>= 1;
         }
     }
 }
@@ -124,99 +125,10 @@ void TM1629A_Init(TM16xxSelect chip)
         // 自动地址增加
         TM1629A_Write_CMD(chip, 0x40);
         // 显示开，亮度7
-        TM1629A_Write_CMD(chip, 0x88);
+        TM1629A_Write_CMD(chip, 0x8F);
     }
 }
 
-
-
-/**
- * @brief  TM1629A 控制 4×3 位共阳数码管显示数字
- * @param  tube : 选芯片 A/B
- * @param  *digits : 长度 12 的数组，元素为 0~9 或 0xFF（熄灭）
- * @retval void
- * @note   硬件：GRID1~8 接 8 段，SEG0~11 接 12 位公共端
- */
-void TM1629A_Digital_Tube_ScanNumber(TM16xxSelect chip,uint8_t *digits)
-{
-    uint8_t buf[12];          // 12 位显存
-    uint8_t i;
-
-    /* 1. 把索引转成真正的段码；0xFF 表示熄灭（全高） */
-    for (i = 0; i < 12; i++)
-    {
-        if (digits[i] <= 9)
-            buf[i] = seg_code[digits[i]];
-        else
-            buf[i] = 0xFF;    // 熄灭
-    }
-
-    /* 2. 固定地址模式写 12 字节 */
-       TM1629A_Write_CMD(chip, 0x44);   // 固定地址模式（命令 0x44）
-       for (i = 0; i < 12; i++)
-       {
-           if (chip == TM1629A_A)
-           {
-               TM1629A_A_STB_L();
-               TM1629A_Write_Byte(chip, 0xC0 | i); // 地址 0xC0+addr
-               TM1629A_Write_Byte(chip, buf[i]);
-               TM1629A_A_STB_H();
-           }
-       }
-       /* 3. 回到自动地址模式，方便后续清屏/刷新 */
-       TM1629A_Write_CMD(chip, 0x40);
-}
-
-
-
-
-/**
- * @brief  指定第 pos 位显示数字 val
- * @param  tube : TM1629A_A / TM1629A_B
- * @param  pos  : 1~12  （1 表示最左边那位）
- * @param  val  : 0~9   （>9 视为熄灭）
- */
-static uint8_t shadow[12] = {0xFF};   // 12 位显存，初值全灭
-void TM1629A_Digital_Tube_ShowDigit(TM16xxSelect chip, uint8_t pos, uint8_t val)
-{
-    if (pos == 0 || pos > 12) return;          // 越界保护
-
-    uint8_t idx = pos - 1;                     // 转成 0~11
-    shadow[idx] = (val <= 9) ? seg_code[val]   // 查段码
-                             : 0xFF;           // 熄灭
-
-    /* 把整包 12 字节写回芯片（固定地址模式） */
-    TM1629A_Write_CMD(chip, 0x44);             // 固定地址
-    for (uint8_t i = 0; i < 12; i++)
-    {
-        if (chip == TM1629A_A)
-        {
-            TM1629A_A_STB_L();
-            TM1629A_Write_Byte(chip, 0xC0 | i);
-            TM1629A_Write_Byte(chip, shadow[i]);
-            TM1629A_A_STB_H();
-        }
-    }
-    TM1629A_Write_CMD(chip, 0x40);             // 恢复自动地址
-}
-
-
-
-
-
-
-/**
-  * @brief  TM1629A Control digital tube off
-  * @param  void
-  * @retval void
-  * @note
-  */
-void TM1629A_Digital_Tube_Clear(TM16xxSelect chip)
-{
-    /* 本次共有4个3位数码管，合计12位，因此初始化12个元素的清除数组 */
-    rt_uint8_t clear_buf[12] = { 0xFF };
-    TM1629A_Digital_Tube_ScanNumber(chip,clear_buf);
-}
 
 
 /**
@@ -243,6 +155,100 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
 
 
 
+///**
+// * @brief  TM1629A 控制 4×3 位共阳数码管显示数字
+// * @param  tube : 选芯片 A/B
+// * @param  *digits : 长度 12 的数组，元素为 0~9 或 0xFF（熄灭）
+// * @retval void
+// * @note   硬件：GRID1~8 接 8 段，SEG0~11 接 12 位公共端
+// */
+//void TM1629A_Digital_Tube_ScanNumber(TM16xxSelect chip,uint8_t *digits)
+//{
+//    uint8_t buf[12];          // 12 位显存
+//    uint8_t i;
+//
+//    /* 1. 把索引转成真正的段码；0xFF 表示熄灭（全高） */
+//    for (i = 0; i < 12; i++)
+//    {
+//        if (digits[i] <= 9)
+//            buf[i] = seg_code[digits[i]];
+//        else
+//            buf[i] = 0xFF;    // 熄灭
+//    }
+//
+//    /* 2. 固定地址模式写 12 字节 */
+//       TM1629A_Write_CMD(chip, 0x44);   // 固定地址模式（命令 0x44）
+//       for (i = 0; i < 12; i++)
+//       {
+//           if (chip == TM1629A_A)
+//           {
+//               TM1629A_A_STB_L();
+//               TM1629A_Write_Byte(chip, 0xC0 | i); // 地址 0xC0+addr
+//               TM1629A_Write_Byte(chip, buf[i]);
+//               TM1629A_A_STB_H();
+//           }
+//       }
+//       /* 3. 回到自动地址模式，方便后续清屏/刷新 */
+//       TM1629A_Write_CMD(chip, 0x40);
+//}
+//
+//
+//
+//
+///**
+// * @brief  指定第 pos 位显示数字 val
+// * @param  tube : TM1629A_A / TM1629A_B
+// * @param  pos  : 1~12  （1 表示最左边那位）
+// * @param  val  : 0~9   （>9 视为熄灭）
+// */
+//static uint8_t shadow[12] = {0xFF};   // 12 位显存，初值全灭
+//void TM1629A_Digital_Tube_ShowDigit(TM16xxSelect chip, uint8_t pos, uint8_t val)
+//{
+//    if (pos == 0 || pos > 12) return;          // 越界保护
+//
+//    uint8_t idx = pos - 1;                     // 转成 0~11
+//    shadow[idx] = (val <= 9) ? seg_code[val]   // 查段码
+//                             : 0xFF;           // 熄灭
+//
+//    /* 把整包 12 字节写回芯片（固定地址模式） */
+//    TM1629A_Write_CMD(chip, 0x44);             // 固定地址
+//    for (uint8_t i = 0; i < 12; i++)
+//    {
+//        if (chip == TM1629A_A)
+//        {
+//            TM1629A_A_STB_L();
+//            TM1629A_Write_Byte(chip, 0xC0 | i);
+//            TM1629A_Write_Byte(chip, shadow[i]);
+//            TM1629A_A_STB_H();
+//        }
+//    }
+//    TM1629A_Write_CMD(chip, 0x40);             // 恢复自动地址
+//}
+//
+
+
+
+
+//
+///**
+//  * @brief  TM1629A Control digital tube off
+//  * @param  void
+//  * @retval void
+//  * @note
+//  */
+//void TM1629A_Digital_Tube_Clear(TM16xxSelect chip)
+//{
+//    /* 本次共有4个3位数码管，合计12位，因此初始化12个元素的清除数组 */
+//    rt_uint8_t clear_buf[12] = { 0xFF };
+//    TM1629A_Digital_Tube_ScanNumber(chip,clear_buf);
+//}
+
+
+
+
+
+
+
 
 
 
@@ -252,21 +258,10 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
   */
 void NixieTube_Thread_entry(void* parameter)
 {
-//    uint8_t num[12] = {1,2,3, 4,5,6, 7,8,9, 0,1,2};  // 从左到右 12 位
-
-    TM1629A_Init(TM1629A_A);
-    TM1629A_Digital_Tube_Set_Brightness(TM1629A_A,7);
+//    TM1629A_Init(TM1629A_A);
     for(;;)
     {
-        TM1629A_Write_Byte(TM1629A_A,0x09);
-//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,1,8);
-//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,2,8);
-//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,3,8);
-//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,4,8);
-//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,5,8);
-//        TM1629A_Digital_Tube_ShowDigit(TM1629A_A,6,8);
-//        TM1629A_Digital_Tube_ScanNumber(TM1629A_A, num);
-//        TM1629A_Digital_Tube_Clear(TM1629A_A);
+        TM1629A_Write_Byte(TM1629A_A,0x99);
         rt_thread_mdelay(50);
     }
 

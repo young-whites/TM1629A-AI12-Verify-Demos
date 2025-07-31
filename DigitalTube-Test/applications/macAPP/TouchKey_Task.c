@@ -52,7 +52,7 @@ AI12_Key_t AI12_ScanKey(void)
     bcd3  = HAL_GPIO_ReadPin(BCD_3_GPIO_Port, BCD_3_Pin) ? 1 : 0;
 
     bcd = (bcd3 << 3) + (bcd2 << 2) + (bcd1 << 1) + bcd0;
-    rt_kprintf("%x\r\n",bcd);
+//    rt_kprintf("%x\r\n",bcd);
     /* 计算索引值 */
     index = bcd & 0x0F;
 
@@ -146,7 +146,7 @@ int AI12_Thread_Init(void)
 
     return RT_EOK;
 }
-//INIT_APP_EXPORT(AI12_Thread_Init);
+INIT_APP_EXPORT(AI12_Thread_Init);
 
 
 
