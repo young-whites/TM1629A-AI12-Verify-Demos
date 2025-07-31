@@ -66,7 +66,7 @@ void TM1629A_Delay_us(uint32_t us)
 
 /**
   * @brief  TM1629A Chip send one byte and select tube to write
-  * @param  tube 数码管选择
+  * @param  chip 选择指定芯片
   *         data 需要写入的数据
   * @retval void
   * @note   这个工程板载了2个TM1629A芯片，因此这个写单个字节函数通过选型进行公用
@@ -97,7 +97,7 @@ void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
 
 /**
   * @brief  TM1629A Chip send one byte(cmd) and select tube to write
-  * @param  tube 数码管选择
+  * @param  chip 选择指定芯片
   *         cmd 指令数据
   * @retval void
   * @note   STB引脚被拉低后，写入的第一个字节作为指令，STB引脚拉高后，CLK时许被忽略
@@ -110,6 +110,24 @@ void TM1629A_Write_CMD(TM16xxSelect chip , rt_uint8_t cmd)
         TM1629A_A_STB_H();
     }
 }
+
+
+/**
+  * @brief  MCU send Anode digital tube's sequence address to TM1629A chip.
+  * @param  chip 选择指定芯片
+  *         cmd 指令数据
+  * @retval void
+  * @note
+  */
+void TM1629A_Select_Digital_Sequence(TM16xxSelect chip ,)
+{
+
+}
+
+
+
+
+
 
 
 

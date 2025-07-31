@@ -53,7 +53,6 @@ void MX_USART1_UART_Init(void);
 
 /* Exported functions prototypes ---------------------------------------------*/
 
-
 /* USER CODE BEGIN EFP */
 
 
