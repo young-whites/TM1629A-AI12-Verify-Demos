@@ -19,39 +19,29 @@
 #define TM1629A_A_STB_L()      HAL_GPIO_WritePin(TM1629A_A_STB_GPIO_Port, TM1629A_A_STB_Pin,  GPIO_PIN_RESET)
 
 //---------------------------------------------------------------------------------------
-
-
-
-
-
+#define DIRG_0_ADDR     0xC0
+#define DIRG_1_ADDR     0xC1
+#define DIRG_2_ADDR     0xC2
+#define DIRG_3_ADDR     0xC3
+#define DIRG_4_ADDR     0xC4
+#define DIRG_5_ADDR     0xC5
+#define DIRG_6_ADDR     0xC6
+#define DIRG_7_ADDR     0xC7
 
 //---------------------------------------------------------------------------------------
 
-
-/* ---------- 共阳段码表（低电平亮） ---------- */
-static const uint8_t seg_code[] = {
-    0xC0, // 0
-    0xF9, // 1
-    0xA4, // 2
-    0xB0, // 3
-    0x99, // 4
-    0x92, // 5
-    0x82, // 6
-    0xF8, // 7
-    0x80, // 8
-    0x90  // 9
+const rt_uint8_t number_code[10] = {
+        0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 };
 
+
+
+const rt_uint8_t tube_sequence_buf[]={
+
+};
 //---------------------------------------------------------------------------------------
 
-void TM1629A_Delay_us(uint32_t us);
-void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data);
-void TM1629A_Write_CMD(TM16xxSelect chip , rt_uint8_t cmd);
-void TM1629A_Init(TM16xxSelect chip);
-void TM1629A_Digital_Tube_Clear(TM16xxSelect chip);
-void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level);
-void TM1629A_Digital_Tube_ScanNumber(TM16xxSelect chip,uint8_t *digits);
-void TM1629A_Digital_Tube_ShowDigit(TM16xxSelect chip, uint8_t pos, uint8_t val);
+
 
 /**
   * @brief  Delay function(uint:ms)
@@ -95,22 +85,6 @@ void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
 
 
 
-/**
-  * @brief  TM1629A Chip send one byte(cmd) and select tube to write
-  * @param  chip 选择指定芯片
-  *         cmd 指令数据
-  * @retval void
-  * @note   STB引脚被拉低后，写入的第一个字节作为指令，STB引脚拉高后，CLK时许被忽略
-  */
-void TM1629A_Write_CMD(TM16xxSelect chip , rt_uint8_t cmd)
-{
-    if(chip == TM1629A_A){
-        TM1629A_A_STB_L();
-        TM1629A_Write_Byte(chip, cmd);
-        TM1629A_A_STB_H();
-    }
-}
-
 
 
 /**
@@ -134,67 +108,6 @@ void TM1629A_Display_CTRL(TM16xxSelect chip, rt_uint8_t ctrl_cmd)
         }
     }
 }
-
-
-/**
-  * @brief  TM1629A Chip set display register address.
-  * @param
-  * @retval void
-  * @note
-  */
-void TM1629A_SET_Dispaly_RES_Addr(TM16xxSelect chip, )
-{
-
-}
-
-
-
-
-
-
-
-
-/**
-  * @brief  TM1629A Chip Initialization
-  * @param  void
-  * @retval void
-  * @note
-  */
-void TM1629A_Init(TM16xxSelect chip)
-{
-    if(chip == TM1629A_A){
-        // 自动地址增加
-        TM1629A_Write_CMD(chip, 0x40);
-        // 显示开，亮度7
-        TM1629A_Write_CMD(chip, 0x8F);
-    }
-}
-
-
-
-
-
-
-
-
-/**
-  * @brief  MCU send Anode digital tube's sequence address to TM1629A chip.
-  * @param  chip 选择指定芯片
-  *         cmd 指令数据
-  * @retval void
-  * @note
-  */
-void TM1629A_Select_Digital_Sequence(TM16xxSelect chip ,)
-{
-    if(chip == TM1629A_A)
-    {
-
-    }
-}
-
-
-
-
 
 
 
@@ -225,96 +138,21 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
 
 
 
-///**
-// * @brief  TM1629A 控制 4×3 位共阳数码管显示数字
-// * @param  tube : 选芯片 A/B
-// * @param  *digits : 长度 12 的数组，元素为 0~9 或 0xFF（熄灭）
-// * @retval void
-// * @note   硬件：GRID1~8 接 8 段，SEG0~11 接 12 位公共端
-// */
-//void TM1629A_Digital_Tube_ScanNumber(TM16xxSelect chip,uint8_t *digits)
-//{
-//    uint8_t buf[12];          // 12 位显存
-//    uint8_t i;
-//
-//    /* 1. 把索引转成真正的段码；0xFF 表示熄灭（全高） */
-//    for (i = 0; i < 12; i++)
-//    {
-//        if (digits[i] <= 9)
-//            buf[i] = seg_code[digits[i]];
-//        else
-//            buf[i] = 0xFF;    // 熄灭
-//    }
-//
-//    /* 2. 固定地址模式写 12 字节 */
-//       TM1629A_Write_CMD(chip, 0x44);   // 固定地址模式（命令 0x44）
-//       for (i = 0; i < 12; i++)
-//       {
-//           if (chip == TM1629A_A)
-//           {
-//               TM1629A_A_STB_L();
-//               TM1629A_Write_Byte(chip, 0xC0 | i); // 地址 0xC0+addr
-//               TM1629A_Write_Byte(chip, buf[i]);
-//               TM1629A_A_STB_H();
-//           }
-//       }
-//       /* 3. 回到自动地址模式，方便后续清屏/刷新 */
-//       TM1629A_Write_CMD(chip, 0x40);
-//}
-//
-//
-//
-//
-///**
-// * @brief  指定第 pos 位显示数字 val
-// * @param  tube : TM1629A_A / TM1629A_B
-// * @param  pos  : 1~12  （1 表示最左边那位）
-// * @param  val  : 0~9   （>9 视为熄灭）
-// */
-//static uint8_t shadow[12] = {0xFF};   // 12 位显存，初值全灭
-//void TM1629A_Digital_Tube_ShowDigit(TM16xxSelect chip, uint8_t pos, uint8_t val)
-//{
-//    if (pos == 0 || pos > 12) return;          // 越界保护
-//
-//    uint8_t idx = pos - 1;                     // 转成 0~11
-//    shadow[idx] = (val <= 9) ? seg_code[val]   // 查段码
-//                             : 0xFF;           // 熄灭
-//
-//    /* 把整包 12 字节写回芯片（固定地址模式） */
-//    TM1629A_Write_CMD(chip, 0x44);             // 固定地址
-//    for (uint8_t i = 0; i < 12; i++)
-//    {
-//        if (chip == TM1629A_A)
-//        {
-//            TM1629A_A_STB_L();
-//            TM1629A_Write_Byte(chip, 0xC0 | i);
-//            TM1629A_Write_Byte(chip, shadow[i]);
-//            TM1629A_A_STB_H();
-//        }
-//    }
-//    TM1629A_Write_CMD(chip, 0x40);             // 恢复自动地址
-//}
-//
 
+/**
+  * @brief  TM1629A show number
+  * @param  level: 亮度等级0~7
+  *         tube : 选择控制数码管的芯片
+  * @retval void
+  * @note   找到寄存器手册的显示控制命令设置（用于设置亮度强度和显示使能）
+  */
+void TM1629A_Display(TM16xxSelect chip,rt_uint8_t *tm1629a_data, rt_uint8_t )
+{
+    if(chip == TM1629A_A)
+    {
 
-
-
-//
-///**
-//  * @brief  TM1629A Control digital tube off
-//  * @param  void
-//  * @retval void
-//  * @note
-//  */
-//void TM1629A_Digital_Tube_Clear(TM16xxSelect chip)
-//{
-//    /* 本次共有4个3位数码管，合计12位，因此初始化12个元素的清除数组 */
-//    rt_uint8_t clear_buf[12] = { 0xFF };
-//    TM1629A_Digital_Tube_ScanNumber(chip,clear_buf);
-//}
-
-
-
+    }
+}
 
 
 
@@ -328,12 +166,145 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
   */
 void NixieTube_Thread_entry(void* parameter)
 {
-    TM1629A_Init(TM1629A_A);
 
     for(;;)
     {
-        TM1629A_Write_Byte(TM1629A_A,0x99);
-        rt_thread_mdelay(50);
+
+//        // 固定地址模式
+//        TM1629A_Write_CMD(chip, 0x44);
+//        // 显示开，亮度7
+//        TM1629A_Write_CMD(chip, 0x8F);
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0x44);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xC0);
+        TM1629A_Write_Byte(TM1629A_A, 0x08);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x01);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xC2);
+        TM1629A_Write_Byte(TM1629A_A, 0x08);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x03);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xC4);
+        TM1629A_Write_Byte(TM1629A_A, 0x08);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x05);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xC6);
+        TM1629A_Write_Byte(TM1629A_A, 0x08);
+
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x07);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xC8);
+        TM1629A_Write_Byte(TM1629A_A, 0x08);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x09);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xCA);
+        TM1629A_Write_Byte(TM1629A_A, 0x08);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x0B);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xCC);
+        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x0D);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0xCE);
+        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+//        TM1629A_A_STB_H();
+//        TM1629A_Delay_us(5);
+//        TM1629A_A_STB_L();
+//        TM1629A_Delay_us(5);
+//        TM1629A_Write_Byte(TM1629A_A, 0x0F);
+//        TM1629A_Write_Byte(TM1629A_A, 0x00);
+
+        TM1629A_A_STB_H();
+        TM1629A_Delay_us(5);
+        TM1629A_A_STB_L();
+        TM1629A_Delay_us(5);
+        TM1629A_Write_Byte(TM1629A_A, 0x8F);
+
+        TM1629A_A_STB_H();
+
+        rt_thread_mdelay(2);
+
     }
 
 }
