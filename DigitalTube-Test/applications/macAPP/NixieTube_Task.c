@@ -18,27 +18,35 @@
 #define TM1629A_A_STB_H()      HAL_GPIO_WritePin(TM1629A_A_STB_GPIO_Port, TM1629A_A_STB_Pin,  GPIO_PIN_SET)
 #define TM1629A_A_STB_L()      HAL_GPIO_WritePin(TM1629A_A_STB_GPIO_Port, TM1629A_A_STB_Pin,  GPIO_PIN_RESET)
 
-//---------------------------------------------------------------------------------------
-#define DIRG_0_ADDR     0xC0
-#define DIRG_1_ADDR     0xC1
-#define DIRG_2_ADDR     0xC2
-#define DIRG_3_ADDR     0xC3
-#define DIRG_4_ADDR     0xC4
-#define DIRG_5_ADDR     0xC5
-#define DIRG_6_ADDR     0xC6
-#define DIRG_7_ADDR     0xC7
+
+// 位选地址（显示数据）---------------------------------------------------------------------------------------
+#define SEG_1_ADDR      0x01
+#define SEG_2_ADDR      0x02
+#define SEG_3_ADDR      0x04
+#define SEG_4_ADDR      0x08
+#define SEG_5_ADDR      0x10
+#define SEG_6_ADDR      0x20
+#define SEG_7_ADDR      0x40
+#define SEG_8_ADDR      0x80
+#define SEG_9_ADDR      0x01
+#define SEG_10_ADDR     0x02
+#define SEG_11_ADDR     0x04
+#define SEG_12_ADDR     0x08
+#define SEG_13_ADDR     0x10
+#define SEG_14_ADDR     0x20
+#define SEG_15_ADDR     0x40
+#define SEG_16_ADDR     0x80
+
 
 //---------------------------------------------------------------------------------------
 
-const rt_uint8_t number_code[10] = {
-        0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
+const rt_uint8_t seg_code[10] = {
+        0xFC,
+        0x0C,
+        0xDA,
+        0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f
 };
 
-
-
-const rt_uint8_t tube_sequence_buf[]={
-
-};
 //---------------------------------------------------------------------------------------
 
 
@@ -85,8 +93,6 @@ void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
 
 
 
-
-
 /**
   * @brief  TM1629A Chip display off/on
   * @param  ctrl_cmd ：  0 --> off
@@ -108,8 +114,6 @@ void TM1629A_Display_CTRL(TM16xxSelect chip, rt_uint8_t ctrl_cmd)
         }
     }
 }
-
-
 
 
 
@@ -136,21 +140,91 @@ void TM1629A_Digital_Tube_Set_Brightness(TM16xxSelect chip, rt_uint8_t level)
 }
 
 
+/**
+  * @brief  TM1629A set data command
+  * @param  cmd  : 数据命令指令
+  * @retval void
+  * @note
+  *         ---------------------------------------------------
+  *          指令      |    功能               |   说明
+  *         ---------------------------------------------------
+  *          0x44   |   数据读写模式  |   写数据到显示寄存器
+  *                 |   地址增加模式  |   固定地址
+  *                 |   模式设置          |   普通模式
+  *         ---------------------------------------------------
+  *          0x40   |   数据读写模式  |   写数据到显示寄存器
+  *                 |   地址增加模式  |   自动地址增加
+  *                 |   模式设置          |   普通模式
+  */
+void TM1629A_Set_Data_Cmd(TM16xxSelect chip, rt_uint8_t cmd)
+{
+    TM1629A_A_STB_H();
+    TM1629A_Delay_us(5);
+    TM1629A_A_STB_L();
+    TM1629A_Delay_us(5);
+    TM1629A_Write_Byte(chip, cmd);
+}
+
+
+
+/**
+  * @brief  TM1629A Write display data
+  * @param  drig_addr : 决定数码管哪个段显示
+  *         seg_addr  : 决定数码管哪个位显示
+  * @retval void
+  * @note
+  */
+void TM1629A_Write_Data(TM16xxSelect chip, rt_uint8_t drig_addr,  TM1629x_SEG_SELECT seg_addr)
+{
+    TM1629A_A_STB_H();
+    TM1629A_Delay_us(5);
+    TM1629A_A_STB_L();
+    TM1629A_Delay_us(5);
+    TM1629A_Write_Byte(chip, drig_addr); // 控制数码管段显示
+    TM1629A_Write_Byte(chip, seg_addr);  // 控制数码管位显示
+}
 
 
 
 /**
   * @brief  TM1629A show number
-  * @param  level: 亮度等级0~7
-  *         tube : 选择控制数码管的芯片
+  * @param  drig_pos  :
+  *         digit_pos : 数码管位选的偏移量（1就代表SEG1引脚对应控制的第一个数码管位选）
   * @retval void
-  * @note   找到寄存器手册的显示控制命令设置（用于设置亮度强度和显示使能）
+  * @note   数码管的位选，默认按照SEG1代表第一个数码管，SEG2代表第二个数码管，依次类推到SEG16
   */
-void TM1629A_Display(TM16xxSelect chip,rt_uint8_t *tm1629a_data, rt_uint8_t )
+void TM1629A_Display_Digit(TM16xxSelect chip, TM1629x_DRIG_SELECT drig_pos, TM1629x_SEG_SELECT digit_pos)
 {
-    if(chip == TM1629A_A)
-    {
+    rt_uint8_t seg_addr; // 位选设置
+    rt_uint8_t drig_addr;// 段选设置
+    rt_uint8_t data;
 
+    if(drig_pos > 15 || digit_pos > 16 || number > 9){
+        return;
+    }
+
+    if(digit_pos >= 1 && digit_pos <= 8){
+        drig_pos = drig_pos;
+    }
+    else if(digit_pos > 8 && digit_pos <=16){
+        drig_pos += 1;
+    }
+
+    /*! 数码管位选 */
+    switch(digit_pos)
+    {
+        // 选择第一个数码管 -- 置位SEG1寄存器，其他置0
+        case TM1629A_SEG_1:
+        {
+
+            seg_addr = SEG_1_ADDR; // 位选地址
+            drig_addr = 0xC0 + drig_pos;
+            TM1629A_Write_Data(chip, drig_addr, seg_addr);
+
+        }break;
+
+
+        default: break;
     }
 }
 
