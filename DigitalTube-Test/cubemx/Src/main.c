@@ -205,14 +205,14 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pins : TM1629A_A_STB_Pin TM1629A_A_CLK_Pin */
   GPIO_InitStruct.Pin = TM1629A_A_STB_Pin|TM1629A_A_CLK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : TM1629A_A_DIO_Pin */
   GPIO_InitStruct.Pin = TM1629A_A_DIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(TM1629A_A_DIO_GPIO_Port, &GPIO_InitStruct);
 
@@ -250,6 +250,7 @@ void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
 
 
 #ifdef  USE_FULL_ASSERT
