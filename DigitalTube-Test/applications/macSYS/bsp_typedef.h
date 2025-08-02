@@ -19,7 +19,10 @@ typedef struct {
     rt_uint8_t  kprintf_cnt;                     // 用于打印序列
     rt_uint8_t  OldMode;                         // 老化模式
     //------------------------------------------------------------
-
+    rt_uint16_t Number_CountDown;                // 倒计时
+    rt_uint16_t Number_Press;                    // 按压数
+    rt_uint16_t Number_Correct;                  // 正确计数
+    rt_uint16_t Number_Error;                    // 错误计数
 
 }RecordStruct;
 extern RecordStruct Record;
@@ -69,7 +72,12 @@ typedef enum
 } TM1629x_SEG_SELECT;
 
 
-
+typedef enum
+{
+    TM1629A_GROUP_1 = 1,
+    TM1629A_GROUP_2,
+    TM1629A_GROUP_3,
+} TM1629x_GROUP_FOR_THREE;
 
 
 

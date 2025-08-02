@@ -121,7 +121,8 @@ void TM1629A_Write_Byte(TM16xxSelect chip , rt_uint8_t data)
   *                 |   模式设置          |   普通模式
   *         ---------------------------------------------------
   *          0x8F   |   显示控制指令  |   显示开，亮度等级7
-  *
+  *         ---------------------------------------------------
+  *          0x80   |   显示控制指令  |   显示关，亮度等级0
   */
 void TM1629A_Set_Cmd(TM16xxSelect chip, rt_uint8_t cmd)
 {
@@ -181,7 +182,8 @@ void TM1629A_Write_Data(TM16xxSelect chip, rt_uint8_t drig_addr,  TM1629x_SEG_SE
   * @param  digit_pos : 数码管位选的偏移量（1就代表SEG1引脚对应控制的第一个数码管位选）
   *         number    : 要显示的数字
   * @retval void
-  * @note   数码管的位选，默认按照SEG1代表第一个数码管，SEG2代表第二个数码管，依次类推到SEG16
+  * @note   缺点: 残影刷新频率太慢，肉眼可以看见闪烁
+  *         注意：该函数每次选择一个数码管进行点亮，初始化配置时使用的是固定地址
   */
 void TM1629A_Display_Digit(TM16xxSelect chip, TM1629x_SEG_SELECT digit_pos ,rt_uint8_t number)
 {
@@ -190,7 +192,7 @@ void TM1629A_Display_Digit(TM16xxSelect chip, TM1629x_SEG_SELECT digit_pos ,rt_u
     rt_uint8_t drig_addr;// 段选设置
     rt_uint8_t data;
 
-    if(digit_pos > 16 || number > 9){
+    if(digit_pos < 1 || digit_pos > 16 || number > 9){
         rt_kprintf("PRINTF:%d. Parameter Error!\r\n",Record.kprintf_cnt++);
         return;
     }
@@ -544,23 +546,32 @@ void TM1629A_Display_Digit(TM16xxSelect chip, TM1629x_SEG_SELECT digit_pos ,rt_u
 
 
 
+
+
+
+
+
+
+
+
 /**
   * @brief  This thread entry is used for NixieTube scanning
   * @retval void
   */
 void NixieTube_Thread_entry(void* parameter)
 {
+    TM1629A_Set_Cmd(TM1629A_A, 0x44);
+    TM1629A_Set_Cmd(TM1629A_A, 0x80);
+
+    Record.Number_CountDown = 300;
+    Record.Number_Press = 120;
+    Record.Number_Correct = 260;
+    Record.Number_Error = 678;
 
     for(;;)
     {
 
-        TM1629A_Set_Cmd(TM1629A_A, 0x44);
-        TM1629A_Display_Digit(TM1629A_A,TM1629A_SEG_4,9);
-//        TM1629A_Set_Cmd(TM1629A_A, 0x8F);
 
-//        TM1629A_Set_Cmd(TM1629A_A, 0x44);
-        TM1629A_Display_Digit(TM1629A_A,TM1629A_SEG_5,8);
-        TM1629A_Set_Cmd(TM1629A_A, 0x8F);
 
         rt_thread_mdelay(2);
 
