@@ -70,17 +70,6 @@ typedef enum
 
 
 
-typedef enum
-{
-    TM1629A_DRIG_A = 0x00,
-    TM1629A_DRIG_B = 0x02,
-    TM1629A_DRIG_C = 0x04,
-    TM1629A_DRIG_D = 0x06,
-    TM1629A_DRIG_E = 0x08,
-    TM1629A_DRIG_F = 0x0A,
-    TM1629A_DRIG_G = 0x0C,
-    TM1629A_DRIG_DP = 0x0E,
-} TM1629x_DRIG_SELECT;
 
 
 
