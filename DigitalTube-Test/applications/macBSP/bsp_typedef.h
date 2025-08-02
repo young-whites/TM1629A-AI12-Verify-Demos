@@ -47,6 +47,44 @@ typedef enum
 } AI12_Key_t;
 
 
+
+typedef enum
+{
+    TM1629A_SEG_1 = 1,
+    TM1629A_SEG_2,
+    TM1629A_SEG_3,
+    TM1629A_SEG_4,
+    TM1629A_SEG_5,
+    TM1629A_SEG_6,
+    TM1629A_SEG_7,
+    TM1629A_SEG_8,
+    TM1629A_SEG_9,
+    TM1629A_SEG_10,
+    TM1629A_SEG_11,
+    TM1629A_SEG_12,
+    TM1629A_SEG_13,
+    TM1629A_SEG_14,
+    TM1629A_SEG_15,
+    TM1629A_SEG_16,
+} TM1629x_SEG_SELECT;
+
+
+
+typedef enum
+{
+    TM1629A_DRIG_A = 0x00,
+    TM1629A_DRIG_B = 0x02,
+    TM1629A_DRIG_C = 0x04,
+    TM1629A_DRIG_D = 0x06,
+    TM1629A_DRIG_E = 0x08,
+    TM1629A_DRIG_F = 0x0A,
+    TM1629A_DRIG_G = 0x0C,
+    TM1629A_DRIG_DP = 0x0E,
+} TM1629x_DRIG_SELECT;
+
+
+
+
 typedef enum
 {
     TM1629A_A = 0,
