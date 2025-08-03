@@ -53,6 +53,20 @@ const rt_uint8_t seg_code[10] = {
         0x6F    /*! 9 */
 };
 
+
+const rt_uint8_t seg_code_t[10]={
+        0xFC,   /*! 0 */
+        0x60,   /*! 1 */
+        0xDA,   /*! 2 */
+        0xF2,   /*! 3 */
+        0x66,   /*! 4 */
+        0xB6,   /*! 5 */
+        0xBE,   /*! 6 */
+        0xE0,   /*! 7 */
+        0xFE,   /*! 8 */
+        0xF6    /*! 9 */
+};
+
 //---------------------------------------------------------------------------------------
 
 void TM1629A_Delay_us(uint32_t us);
@@ -582,6 +596,7 @@ void split_to_digits(char *number_buf, uint8_t digit_buf[16])
     }
     /* 打印调试（可选） */
 #if NIXIETUBE_PRINTF_DEBUG
+//#if 1
     for (uint8_t i = 0; i < 16; i++)
     {
         rt_kprintf("%d ", digit_buf[i]);
@@ -606,7 +621,8 @@ void build_digit_matrix(uint8_t digit_buf[COLS], uint8_t matrix[ROWS * COLS])
     /* 逐列处理 */
     for (uint8_t col = 0; col < COLS; ++col)
     {
-        uint8_t val = digit_buf[col];
+        /* 查表 */
+        uint8_t val = seg_code_t[digit_buf[col]];
         /* 逐行展开：高位(bit7) → 低位(bit0) */
         for (uint8_t row = 0; row < ROWS; ++row)
         {
@@ -617,6 +633,7 @@ void build_digit_matrix(uint8_t digit_buf[COLS], uint8_t matrix[ROWS * COLS])
     }
 
 #if NIXIETUBE_PRINTF_DEBUG
+//#if 1
     /* 打印矩阵，方便验证 */
     rt_kprintf("-----------------------------------------------------\r\n");
     for (uint8_t r = 0; r < ROWS; ++r)
@@ -634,11 +651,12 @@ void build_digit_matrix(uint8_t digit_buf[COLS], uint8_t matrix[ROWS * COLS])
 
 
 /**
-  * @brief  将拆分的
-  * @param  *number_buf : 拼接后进行存储的数组
-  *         *digit_buf  : 准备存储拆分后单个数字的数组
+  * @brief  将拆分得到数组重新进行拼接
+  * @param  matrix : 8*16的二进制数组
+  *         hex_buf: 转换成16进制字节
   * @retval void
-  * @note   NULL
+  * @note   bit0 bit1 ... bit7  → byte0 (bit0是LSB, bit7是MSB)
+  *         bit8 bit9 ... bit15 → byte1 (bit8是LSB, bit15是MSB)
   */
 void matrix_to_hex(const uint8_t matrix[ROWS * COLS], uint8_t hex_buf[ROWS * 2])
 {
@@ -660,7 +678,40 @@ void matrix_to_hex(const uint8_t matrix[ROWS * COLS], uint8_t hex_buf[ROWS * 2])
         hex_buf[row * 2 + 0] = byte0;
         hex_buf[row * 2 + 1] = byte1;
     }
+
+
+#if NIXIETUBE_PRINTF_DEBUG
+//#if 1
+    /* 打印数据，方便验证 */
+    printf("Hex output (row-wise, 2 bytes per row):\n");
+    for (uint8_t i = 0; i < 8; ++i)
+    {
+        printf("Row%d: 0x%02X 0x%02X\n", i, hex_buf[i * 2], hex_buf[i * 2 + 1]);
+    }
+#endif
 }
+
+
+
+/**
+  * @brief  设置自动地址模式，把数字转换得到的16进制数，依次传入显示地址，进行数码管显示
+  * @param
+  *
+  * @retval void
+  * @note
+  */
+void TM1629A_Show_Number(TM16xxSelect chip, uint8_t *hex_buf)
+{
+    if(chip == TM1629A_A)
+    {
+
+        for(rt_uint8_t i = 0; i < 16; i++){
+            TM1629A_Set_Cmd(chip, 0xC0 + i);
+            TM1629A_Write_Byte(chip, hex_buf[i]);
+        }
+    }
+}
+
 
 
 
@@ -673,27 +724,29 @@ void matrix_to_hex(const uint8_t matrix[ROWS * COLS], uint8_t hex_buf[ROWS * 2])
 void NixieTube_Thread_entry(void* parameter)
 {
     TM1629A_Set_Cmd(TM1629A_A, 0x44);
-    TM1629A_Set_Cmd(TM1629A_A, 0x80);
+    TM1629A_Set_Cmd(TM1629A_A, 0x8F);
 
-    Record.Number_CountDown = 10;
-    Record.Number_Press = 1;
-    Record.Number_Correct = 260;
-    Record.Number_Error = 678;
+    Record.Number_CountDown = 0;
+    Record.Number_Press = 0;
+    Record.Number_Correct = 156;
+    Record.Number_Error = 888;
 
-    char buf[16] = {0};
-    rt_uint8_t new[16] = {0};
+    /* 用于存储拼接后得到的数字字符串数组 */
+    char string_buf[16] = {0};
+    /* 用于存储拆分格式化后数字字符串的单个数字的数组 */
+    rt_uint8_t single_digit_buf[16] = {0};
+    /* 用于存储将单个数字按列排序，按行进行二进制拆分后得到的8*16矩阵 */
     uint8_t matrix[ROWS * COLS];
-
+    /* 用于存储将矩阵数据转换为16进制数的数组 */
+    uint8_t matrix_to_hex_buf[8*2];
     for(;;)
     {
-        digital_splicing(buf,Record.Number_CountDown,Record.Number_Press,Record.Number_Correct,Record.Number_Error);
-        split_to_digits(buf,new);
-        build_digit_matrix(new,matrix);
-
-
-
-        rt_thread_mdelay(500);
-
+        digital_splicing(string_buf,Record.Number_CountDown,Record.Number_Press,Record.Number_Correct,Record.Number_Error);
+        split_to_digits(string_buf,single_digit_buf);
+        build_digit_matrix(single_digit_buf,matrix);
+        matrix_to_hex(matrix,matrix_to_hex_buf);
+        TM1629A_Show_Number(TM1629A_A,matrix_to_hex_buf);
+        rt_thread_mdelay(2);
     }
 
 }
