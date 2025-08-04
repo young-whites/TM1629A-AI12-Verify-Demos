@@ -45,6 +45,11 @@ static void Timing_500ms(void)
 
 static void Timing_1s(void)
 {
+    Record.Number_Press++;
+    if(Record.Number_Press > 9){
+        Record.Number_Press = 0;
+    }
+    rt_kprintf("%d\r\n",Record.Number_Press);
 }
 
 
