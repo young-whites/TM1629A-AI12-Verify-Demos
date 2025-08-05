@@ -72,13 +72,6 @@ typedef enum
 } TM1629x_SEG_SELECT;
 
 
-typedef enum
-{
-    TM1629A_GROUP_1 = 1,
-    TM1629A_GROUP_2,
-    TM1629A_GROUP_3,
-} TM1629x_GROUP_FOR_THREE;
-
 
 
 
